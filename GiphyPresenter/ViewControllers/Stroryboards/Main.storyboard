@@ -88,6 +88,7 @@
                     <connections>
                         <outlet property="gifsCollectionView" destination="aG2-to-1ij" id="inP-VB-x5m"/>
                         <outlet property="noResult" destination="G7v-yW-QBv" id="d9d-HG-RU1"/>
+                        <outlet property="searchBar" destination="okt-1y-dk0" id="ykq-oQ-BED"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>

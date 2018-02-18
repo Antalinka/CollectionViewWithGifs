@@ -1,0 +1,6 @@
+framework module Giphy_iOS {
+  umbrella header "Giphy-iOS-umbrella.h"
+
+  export *
+  module * { export * }
+}

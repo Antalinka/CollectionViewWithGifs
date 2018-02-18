@@ -103,8 +103,6 @@ public class CollectionGiphyGridLayouts: UICollectionViewLayout {
         }
     }
     
-    
-    
     override public func layoutAttributesForItem(at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
         return cellAttributeCache[indexPath.row]
     }

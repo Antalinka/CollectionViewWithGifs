@@ -1,0 +1,22 @@
+PODS:
+  - AFNetworking/Serialization (2.3.1)
+  - FLAnimatedImage (1.0.12)
+  - Giphy-iOS (0.1.1):
+    - AFNetworking/Serialization (~> 2.3.1)
+  - MBProgressHUD (1.1.0)
+
+DEPENDENCIES:
+  - AFNetworking/Serialization (~> 2.3.1)
+  - FLAnimatedImage (~> 1.0)
+  - Giphy-iOS
+  - MBProgressHUD
+
+SPEC CHECKSUMS:
+  AFNetworking: 05b9f6e3aa5ac45bc383b4bb108ef338080a26c7
+  FLAnimatedImage: 4a0b56255d9b05f18b6dd7ee06871be5d3b89e31
+  Giphy-iOS: 95ce787749b73435524f40f700f026db5dfe251b
+  MBProgressHUD: e7baa36a220447d8aeb12769bf0585582f3866d9
+
+PODFILE CHECKSUM: 1ce78560e91d9934f03a21ac9c8533c564c8245a
+
+COCOAPODS: 1.4.0

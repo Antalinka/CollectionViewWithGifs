@@ -24,9 +24,12 @@ class GiphyCollectionViewCell: UICollectionViewCell {
     
     private func setupAnimatedImage() {
         guard let url = self.url else { return }
-        if let imageData = try? Data(contentsOf: url) {
-            let animatedImage = FLAnimatedImage(animatedGIFData: imageData)
-            self.animatedImageView.animatedImage = animatedImage
+        if let img = RuntimeStorage.sharedInstance.imageForKey(url.absoluteString) {
+            self.animatedImageView.animatedImage = img
+        } else
+            if let imageData = try? Data(contentsOf: url) {
+                let animatedImage = FLAnimatedImage(animatedGIFData: imageData, optimalFrameCacheSize: 0, predrawingEnabled: true)
+                self.animatedImageView.animatedImage = animatedImage
         }
         self.animatedImageView.backgroundColor = .lightGray
     }

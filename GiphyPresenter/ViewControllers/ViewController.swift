@@ -13,6 +13,7 @@ import MBProgressHUD
 
 class ViewController: UIViewController {
     
+    @IBOutlet private weak var searchBar: UISearchBar!
     @IBOutlet private weak var noResult: UILabel!
     @IBOutlet fileprivate weak var gifsCollectionView: UICollectionView!
     
@@ -37,6 +38,18 @@ class ViewController: UIViewController {
             layouts.padding = ViewController.padding
             layouts.delegate = self
         }
+        self.hideKeyboard()
+    }
+    
+    private func hideKeyboard() {
+        let tap: UITapGestureRecognizer = UITapGestureRecognizer(
+            target: self,
+            action: #selector(ViewController.dismissKeyboard))
+        view.addGestureRecognizer(tap)
+    }
+    
+    @objc private func dismissKeyboard() {
+        self.searchBar.resignFirstResponder()
     }
     
     fileprivate func fetchNextAnimations() {
@@ -44,13 +57,15 @@ class ViewController: UIViewController {
         guard !isSearchPageLoadInProgress else { return }
         
         self.isSearchPageLoadInProgress = true
-        MBProgressHUD.showAdded(to: self.view, animated: true)
+        MBProgressHUD.showAdded(to: UIApplication.shared.keyWindow!, animated: true)
         NetworkLayer.sharedInstance.searchGiphyWithTerm(searchedText, offset: self.currentPageOffset){[weak self](result, term, error) in
             guard let s = self else { return }
-            MBProgressHUD.hide(for: s.view, animated: true)
+            MBProgressHUD.hide(for: UIApplication.shared.keyWindow!, animated: true)
             s.isSearchPageLoadInProgress = false
-            if let confirmError = error {
-                s.showError(confirmError)
+            if let confirmError = error as NSError? {
+                if (confirmError as NSError).code != NSURLErrorCancelled {
+                    s.showError(confirmError)
+                }
             } else if let confirmResult = result {
                 print(confirmResult.count)
                 s.dataSource += confirmResult
@@ -64,18 +79,24 @@ class ViewController: UIViewController {
         guard searchedText != nil else { return }
         self.searchText        = searchedText
         self.currentPageOffset = 0
-        
-        MBProgressHUD.showAdded(to: self.view, animated: true)
+        RuntimeStorage.sharedInstance.removeAll()
+        guard self.searchText!.isEmpty == false else {
+            self.dataSource.removeAll()
+            self.reloadCollectionView()
+            return
+        }
+        MBProgressHUD.showAdded(to: UIApplication.shared.keyWindow!, animated: true)
         NetworkLayer.sharedInstance.searchGiphyWithTerm(searchedText!, offset: self.currentPageOffset){[weak self](result,term, error) in
             guard let s = self else { return }
-            MBProgressHUD.hide(for: s.view, animated: true)
+            MBProgressHUD.hide(for: UIApplication.shared.keyWindow!, animated: true)
             if let confirmError = error {
-                s.showError(confirmError)
-                s.dataSource.removeAll()
-                s.currentPageOffset = 0
-                s.reloadCollectionView()
+                if (confirmError as NSError).code != NSURLErrorCancelled {
+                    s.showError(confirmError)
+                    s.dataSource.removeAll()
+                    s.currentPageOffset = 0
+                    s.reloadCollectionView()
+                }
             } else if let confirmResult = result {
-                print(confirmResult.count)
                 s.dataSource = confirmResult
                 s.currentPageOffset += UInt(s.dataSource.count)
                 s.reloadCollectionView()
@@ -97,16 +118,16 @@ class ViewController: UIViewController {
     }
     
     private func updateCollectionView(withNumberOfCell count: Int) {
-        DispatchQueue.main.async(execute: {() -> Void in
-            var indexPaths = [IndexPath]()
-            for i in 1...count {
-                let indexPath = IndexPath(item: (self.dataSource.count - i), section: 0)
-                indexPaths.append(indexPath)
-            }
-            self.gifsCollectionView.reloadData()
-        })
+        var indexPaths = [IndexPath]()
+        for i in 1...count {
+            let indexPath = IndexPath(item: (self.dataSource.count - i), section: 0)
+            indexPaths.append(indexPath)
+        }
+        self.gifsCollectionView.performBatchUpdates({
+            self.gifsCollectionView.insertItems(at: indexPaths)
+        }, completion: nil)
     }
-
+    
     private func showError(_ error: Error) {
         print("ERROR: \(error.localizedDescription)")
     }
@@ -137,7 +158,7 @@ extension ViewController : UICollectionViewDataSource {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: GiphyCollectionViewCell.self),
                                                       for: indexPath) as! GiphyCollectionViewCell
         let gif = self.dataSource[indexPath.row]
-        if let url = gif.originalImage.url {
+        if let url = gif.fixedWidthDownsampledImage.url {
             cell.url = url
         }
         return cell
